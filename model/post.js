@@ -12,10 +12,14 @@ const postSchema = new mongoose.Schema({
         reviewPic: {
             type: String,
             required: true
-        },  
+        },
+        creator: {
+            type: mongoose.Types.ObjectId,
+            required: true
+        } 
     },
     {timestamps: true}
 )
 
 const postModel = mongoose.model("Post", postSchema)
-export default postModel
+export default postModel 

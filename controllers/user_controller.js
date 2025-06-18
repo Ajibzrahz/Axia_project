@@ -1,5 +1,6 @@
 import userModel from "../model/user.js";
 import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
 
 
 const createUser = async (req, res) => {
@@ -44,7 +45,7 @@ const getUsers = async (req, res) => {
 }
 
 const updateUser = async (req, res) => {
-    const {id} = req.query
+    const {id} = req.user
     const payload = req.body
     const updatedUser = await userModel.findByIdAndUpdate(
         id, 
@@ -55,15 +56,39 @@ const updateUser = async (req, res) => {
 }
 
 const deleteUser = async (req, res) => {
-    const {id} = req.query
-    const deleteduser = await userModel.findByIdAndDelete(id)
-    res.status(201).json(deleteduser)
+    const {id, admin} = req.user
+    const { confirm } = req.body
+    try {
+    const deleteduser = await userModel.findById(id)
 
+    //check if user can delete account
+    if(id != deleteduser.id && !admin){
+        return res.json({
+            message: "You don't the authorization to delete this account"
+        })
+    }
+
+    //confirming user delete
+    if(!confirm) {
+        res.json({
+            message: "Are you sure you want to delete your account? Send { confirm: true } in the request body."
+        })
+    }
+
+    await userModel.findByIdAndDelete(id)
+    res.clearCookie("Token")
+    res.status(201).json({message: "Your account has been deleted successfully"})
+
+    } catch (error) {
+        res.json(error.message)
+    }
+   
 }
 
 const loginUser = async (req, res) => {
     const {email, password} = req.body
     const user = await userModel.findOne({email:email})
+    
     if(!user){
         res.json({
             "message": "This is account does not exist, create account!!!"
@@ -74,14 +99,24 @@ const loginUser = async (req, res) => {
         return res.json({
             "message": "Invalid Email or Password"
         })
-    } else {
-        return res.json({
-            "message": "Login successful",
-            id: user.id,
-            name: user.name,
-            email: user.email
-        })
     }
+    //generating a token
+    const token = jwt.sign({
+        id: user.id,
+        email: user.email,
+        admin: user.admin
+    }, process.env.JWT_SECRET, {
+        expiresIn: "2hr"
+    })
+
+    res.cookie("Token", token, {
+        maxAge: 1000 * 60 * 60 * 24,
+        secure: true
+    })
+    return res.json({
+        message: "login successful"
+    })
+
 }
 
 export {createUser, getUsers, updateUser, deleteUser, loginUser}
