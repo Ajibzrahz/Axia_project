@@ -10,7 +10,7 @@ const createUser = async (req, res) => {
         || !payload.email
     ) {
         return res.json(
-            {"message" : "Fill in the required section"}
+            {message : "Fill in the required section"}
         )
     }
     const existingUser = await userModel.findOne({

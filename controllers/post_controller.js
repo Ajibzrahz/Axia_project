@@ -46,9 +46,9 @@ try {
 
 }
 const getUserPosts = async (req, res) => {
-    const {creator_id} = req.params
+    const {id} = req.user
     try {
-    const posts =  await postModel.find({creator:creator_id})
+    const posts =  await postModel.find({creator:id})
         return res.send(posts)
     } catch (error) {
         return res.send(error.message)
