@@ -1,122 +1,118 @@
 import userModel from "../model/user.js";
-import bcrypt from "bcryptjs"
-import jwt from "jsonwebtoken"
-
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const createUser = async (req, res) => {
-    const payload = req.body
+  const payload = req.body;
 
-    if (!payload.password 
-        || !payload.email
-    ) {
-        return res.json(
-            {message : "Fill in the required section"}
-        )
-    }
-    const existingUser = await userModel.findOne({
-        $or: [
-            {email: payload.email},
-            {phone: payload.phone},
-        ]
-    })
-    if (existingUser) {
-        return res.json({
-            "message": "User already exist try another email/phone or log into your account"
-        })
-    }
-    try {
-    const hashedpassword = await bcrypt.hash(payload.password, 10)
+  if (!payload.password || !payload.email) {
+    return res.json({ message: "Fill in the required section" });
+  }
+  const existingUser = await userModel.findOne({
+    $or: [{ email: payload.email }, { phone: payload.phone }],
+  });
+  if (existingUser) {
+    return res.json({
+      message:
+        "User already exist try another email/phone or log into your account",
+    });
+  }
+  try {
+    const hashedpassword = await bcrypt.hash(payload.password, 10);
     const newUser = new userModel({
-        ...payload,
-        password: hashedpassword
-    })
+      ...payload,
+      password: hashedpassword,
+    });
 
-    const savedUser = await newUser.save( )
-    res.status(201).json(savedUser)
-    } catch(error){
-       return res.json({error: error.message})
-    };
-    
-}
+    const savedUser = await newUser.save();
+    res.status(201).json(savedUser);
+  } catch (error) {
+    return res.json({ error: error.message });
+  }
+};
 
 const getUsers = async (req, res) => {
-    const allUsers = await userModel.find()
-    res.json(allUsers)
-}
+  const allUsers = await userModel.find();
+  res.json(allUsers);
+};
 
 const updateUser = async (req, res) => {
-    const {id} = req.user
-    const payload = req.body
-    const updatedUser = await userModel.findByIdAndUpdate(
-        id, 
-        {...payload}, 
-        {new:true}
-    )
-    res.json(updatedUser)
-}
+  const { id } = req.user;
+  const payload = req.body;
+  const updatedUser = await userModel.findByIdAndUpdate(
+    id,
+    { ...payload },
+    { new: true }
+  );
+  res.json(updatedUser);
+};
 
 const deleteUser = async (req, res) => {
-    const {id, admin} = req.user
-    const { confirm } = req.body
-    try {
-    const deleteduser = await userModel.findById(id)
+  const { id, admin } = req.user;
+  const { confirm } = req.body;
+  try {
+    const deleteduser = await userModel.findById(id);
 
     //check if user can delete account
-    if(id != deleteduser.id && !admin){
-        return res.json({
-            message: "You don't the authorization to delete this account"
-        })
+    if (id != deleteduser.id && !admin) {
+      return res.json({
+        message: "You don't the authorization to delete this account",
+      });
     }
 
     //confirming user delete
-    if(!confirm) {
-        res.json({
-            message: "Are you sure you want to delete your account? Send { confirm: true } in the request body."
-        })
+    if (!confirm) {
+      res.json({
+        message:
+          "Are you sure you want to delete your account? Send { confirm: true } in the request body.",
+      });
     }
 
-    await userModel.findByIdAndDelete(id)
-    res.clearCookie("Token")
-    res.status(201).json({message: "Your account has been deleted successfully"})
-
-    } catch (error) {
-        res.json(error.message)
-    }
-   
-}
+    await userModel.findByIdAndDelete(id);
+    res.clearCookie("Token");
+    res
+      .status(201)
+      .json({ message: "Your account has been deleted successfully" });
+  } catch (error) {
+    res.json(error.message);
+  }
+};
 
 const loginUser = async (req, res) => {
-    const {email, password} = req.body
-    const user = await userModel.findOne({email:email})
-    
-    if(!user){
-        res.json({
-            "message": "This is account does not exist, create account!!!"
-        })
-    }
-    const isValid = await bcrypt.compare(password, user.password)
-    if (!isValid){
-        return res.json({
-            "message": "Invalid Email or Password"
-        })
-    }
-    //generating a token
-    const token = jwt.sign({
-        id: user.id,
-        email: user.email,
-        admin: user.admin
-    }, process.env.JWT_SECRET, {
-        expiresIn: "2hr"
-    })
+  const { email, password } = req.body;
+  const user = await userModel.findOne({ email: email });
 
-    res.cookie("Token", token, {
-        maxAge: 1000 * 60 * 60 * 24,
-        secure: true
-    })
+  if (!user) {
+    res.json({
+      message: "This is account does not exist, create account!!!",
+    });
+  }
+  const isValid = await bcrypt.compare(password, user.password);
+  if (!isValid) {
     return res.json({
-        message: "login successful"
-    })
+      message: "Invalid Email or Password",
+    });
+  }
+  //generating a token
+  const token = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      admin: user.admin,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "2hr",
+    }
+  );
 
-}
+  res.cookie("Token", token, {
+    maxAge: 1000 * 60 * 60 * 24,
+    secure: true,
+  });
+  return res.json({
+    message: "login successful",
+  });
+};
 
-export {createUser, getUsers, updateUser, deleteUser, loginUser}
+export { createUser, getUsers, updateUser, deleteUser, loginUser };

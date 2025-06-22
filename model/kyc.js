@@ -1,28 +1,27 @@
 import mongoose from "mongoose";
 
-const postSchema = new mongoose.Schema(
+const kycSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: true,
     },
-    desc: {
+    frontPix: {
       type: String,
       required: true,
     },
-    reviewPic: {
+    backPix: {
       type: String,
       required: true,
     },
-    creator: {
+    user: {
       type: mongoose.Types.ObjectId,
       ref: "User",
-      required: true,
       unique: true,
     },
   },
   { timestamps: true }
 );
 
-const postModel = mongoose.model("Post", postSchema);
-export default postModel;
+const kycModel = mongoose.model("Kyc", kycSchema);
+export default kycModel;
