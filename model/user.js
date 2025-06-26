@@ -39,11 +39,18 @@ const userSchema = new mongoose.Schema(
     kyc: {
       type: mongoose.Types.ObjectId,
       ref: "Kyc",
+      unique: true,
     },
     posts: [
       {
         type: mongoose.Types.ObjectId,
         ref: "Post",
+      },
+    ],
+    likes: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Like",
       },
     ],
   },

@@ -31,11 +31,6 @@ const createUser = async (req, res) => {
   }
 };
 
-const getUsers = async (req, res) => {
-  const allUsers = await userModel.find();
-  res.json(allUsers);
-};
-
 const updateUser = async (req, res) => {
   const { id } = req.user;
   const payload = req.body;
@@ -78,6 +73,25 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const singleUser = async (req, res) => {
+  const { id } = req.user;
+  try {
+    const userAccount = await userModel
+      .findById(id)
+      .populate({
+        path: "posts",
+        select: "title desc",
+      })
+      .populate({
+        path: "kyc",
+        select: "-backPix",
+      });
+    return res.json(userAccount);
+  } catch (error) {
+    return res.json(error.message);
+  }
+};
+
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await userModel.findOne({ email: email });
@@ -87,7 +101,7 @@ const loginUser = async (req, res) => {
       message: "This is account does not exist, create account!!!",
     });
   }
-  const isValid = await bcrypt.compare(password, user.password);
+  const isValid = bcrypt.compareSync(password, user.password);
   if (!isValid) {
     return res.json({
       message: "Invalid Email or Password",
@@ -97,7 +111,7 @@ const loginUser = async (req, res) => {
   const token = jwt.sign(
     {
       id: user.id,
-      email: user.email,
+      kyc: user.kyc,
       admin: user.admin,
     },
     process.env.JWT_SECRET,
@@ -115,4 +129,4 @@ const loginUser = async (req, res) => {
   });
 };
 
-export { createUser, getUsers, updateUser, deleteUser, loginUser };
+export { createUser, updateUser, deleteUser, loginUser, singleUser };

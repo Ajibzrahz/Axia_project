@@ -1,5 +1,5 @@
-import kycModel from "../model/kyc";
-import userModel from "../model/user";
+import kycModel from "../model/kyc.js";
+import userModel from "../model/user.js";
 
 const createKyc = async (req, res) => {
   const payload = req.body;
@@ -7,7 +7,7 @@ const createKyc = async (req, res) => {
 
   try {
     //verifying kyc existing before
-    const kycExist = kycModel.findOne({ user: id });
+    const kycExist = await kycModel.findOne({ user: id });
     if (kycExist) {
       return res.json({ message: "User has already completed KYC" });
     }
@@ -17,11 +17,25 @@ const createKyc = async (req, res) => {
 
     //updating the user account
     await userModel.findByIdAndUpdate(id, { kyc: savedKyc }, { new: true });
+    return res.json({
+      message: "KYC submitted successfully",
+      kyc: savedKyc,
+    });
   } catch (error) {
-    res.json({
+    return res.json({
       message: error.message,
     });
   }
 };
 
-export { createKyc };
+const getOneKyc = async (req, res) => {
+  const { kyc } = req.user;
+  try {
+    const userKyc = await kycModel.findById(kyc).populate("user");
+    res.json(userKyc)
+  } catch (error) {
+    res.json(error.message)
+  }
+};
+
+export { createKyc, getOneKyc };

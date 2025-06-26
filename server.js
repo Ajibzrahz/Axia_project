@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 dotenv.config();
 import kycrouter from "./routes/kyc_routes.js";
+import likesRouter from "./routes/like_routes.js";
 
 const port = 5000;
 const app = express();
@@ -29,3 +30,4 @@ app.use(cookieParser());
 app.use(router);
 app.use(postRouter);
 app.use(kycrouter);
+app.use(likesRouter)

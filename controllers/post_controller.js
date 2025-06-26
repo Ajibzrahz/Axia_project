@@ -5,7 +5,6 @@ import userModel from "../model/user.js";
 const createPost = async (req, res) => {
   const post = req.body;
   const { id } = req.user;
-  console.log(req.user);
 
   try {
     const newPost = new postModel({
@@ -27,11 +26,12 @@ const createPost = async (req, res) => {
         await userModel.findByIdAndUpdate(id, {post:allPostsId}, {new:true})
         */
     //3.
-    await userModel.findByIdAndUpdate(
+    const Updated = await userModel.findByIdAndUpdate(
       id,
-      { $push: { post: savedPost.id } },
+      { $push: { posts: savedPost._id } },
       { new: true }
     );
+    console.log(Updated);
 
     res.send("Post Updated Successfully");
   } catch (error) {
