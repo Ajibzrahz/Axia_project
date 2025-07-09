@@ -5,6 +5,7 @@ import {
   deleteUser,
   loginUser,
   singleUser,
+  getAllUser,
 } from "../controllers/user_controller.js";
 import authenticateUser from "../middlewares/auth.middleware.js";
 
@@ -15,5 +16,6 @@ router.get("/", authenticateUser, singleUser);
 router.put("/", authenticateUser, updateUser);
 router.delete("/", authenticateUser, deleteUser);
 router.post("/login", loginUser);
+router.get("/users", getAllUser);
 
 export default router;

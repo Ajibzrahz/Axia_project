@@ -4,7 +4,7 @@ import authenticateUser from "../middlewares/auth.middleware.js";
 
 const likesRouter = e.Router();
 
-likesRouter.get("/likes", userLikes);
+likesRouter.get("/likes", authenticateUser, userLikes);
 likesRouter.post("/likes", authenticateUser, likepost);
 
 export default likesRouter;

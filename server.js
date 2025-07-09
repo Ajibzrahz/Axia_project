@@ -30,4 +30,10 @@ app.use(cookieParser());
 app.use(router);
 app.use(postRouter);
 app.use(kycrouter);
-app.use(likesRouter)
+app.use(likesRouter);
+
+app.use((error, req, res, next) => {
+  return res
+    .status(error.status || 501)
+    .json({ message: error.message || "something happened" });
+});

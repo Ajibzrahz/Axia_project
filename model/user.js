@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { hashed } from "../middlewares/document_middleware.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -40,6 +41,7 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "Kyc",
       unique: true,
+      sparse: true,
     },
     posts: [
       {
@@ -56,6 +58,9 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+//mongoose middleware
+userSchema.pre("save", hashed);
 
 const userModel = mongoose.model("User", userSchema);
 

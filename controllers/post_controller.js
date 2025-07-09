@@ -17,7 +17,7 @@ const createPost = async (req, res) => {
     /*
         const userInfo = await userModel.findById(id)
         userInfo.posts.push(savedPost.id)
-       await userInfo.save()
+        await userInfo.save()
        //2.
        */
     /*
@@ -75,7 +75,7 @@ const getUserPosts = async (req, res) => {
 const getSinglePost = async (req, res) => {
   const { post_id } = req.query;
   try {
-    const singlePost = await postModel.findById(post_id);
+    const singlePost = await postModel.findById(post_id).populate("likes");
     if (!singlePost) {
       return res.json({
         message: "post does not exist",

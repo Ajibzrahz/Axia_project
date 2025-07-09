@@ -18,11 +18,7 @@ const createUser = async (req, res) => {
     });
   }
   try {
-    const hashedpassword = await bcrypt.hash(payload.password, 10);
-    const newUser = new userModel({
-      ...payload,
-      password: hashedpassword,
-    });
+    const newUser = new userModel(payload);
 
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
@@ -75,6 +71,7 @@ const deleteUser = async (req, res) => {
 
 const singleUser = async (req, res) => {
   const { id } = req.user;
+  console.log(id);
   try {
     const userAccount = await userModel
       .findById(id)
@@ -85,6 +82,10 @@ const singleUser = async (req, res) => {
       .populate({
         path: "kyc",
         select: "-backPix",
+      })
+      .populate({
+        path: "likes",
+        select: "-user",
       });
     return res.json(userAccount);
   } catch (error) {
@@ -92,41 +93,84 @@ const singleUser = async (req, res) => {
   }
 };
 
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
-  const user = await userModel.findOne({ email: email });
+  try {
+    const user = await userModel.findOne({ email: email });
 
-  if (!user) {
-    res.json({
-      message: "This is account does not exist, create account!!!",
-    });
-  }
-  const isValid = bcrypt.compareSync(password, user.password);
-  if (!isValid) {
-    return res.json({
-      message: "Invalid Email or Password",
-    });
-  }
-  //generating a token
-  const token = jwt.sign(
-    {
-      id: user.id,
-      kyc: user.kyc,
-      admin: user.admin,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "2hr",
+    if (!user) {
+      throw new Error("This is account does not exist, create account!!!");
     }
-  );
+    const isValid = bcrypt.compareSync(password, user.password);
+    if (!isValid) {
+      const err = new Error("Invalid Email or Password");
+      err.status = 400;
+      next(err);
+    }
+    //generating a token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        kyc: user.kyc,
+        admin: user.admin,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "2hr",
+      }
+    );
 
-  res.cookie("Token", token, {
-    maxAge: 1000 * 60 * 60 * 24,
-    secure: true,
-  });
-  return res.json({
-    message: "login successful",
-  });
+    res.cookie("Token", token, {
+      maxAge: 1000 * 60 * 60 * 24,
+      secure: true,
+    });
+    return res.json({
+      message: "login successful",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
-export { createUser, updateUser, deleteUser, loginUser, singleUser };
+const getAllUser = async (req, res) => {
+  try {
+    const users = await userModel.aggregate([
+      {
+        $match: {
+          email: { $regex: /@gmail\.com$/ },
+        },
+      },
+      {
+        $sort: {
+          name: -1,
+        },
+      },
+      {
+        $lookup: {
+          from: "posts",
+          localField: "posts",
+          foreignField: "_id",
+          as: "postDetails",
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          _id: 0,
+        },
+      },
+    ]);
+    return res.json(users);
+  } catch (error) {
+    res.json(error.message);
+  }
+};
+
+export {
+  createUser,
+  updateUser,
+  deleteUser,
+  loginUser,
+  singleUser,
+  getAllUser,
+};

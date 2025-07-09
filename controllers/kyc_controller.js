@@ -32,9 +32,9 @@ const getOneKyc = async (req, res) => {
   const { kyc } = req.user;
   try {
     const userKyc = await kycModel.findById(kyc).populate("user");
-    res.json(userKyc)
+    res.json(userKyc);
   } catch (error) {
-    res.json(error.message)
+    res.json(error.message);
   }
 };
 

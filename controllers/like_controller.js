@@ -1,7 +1,10 @@
 import likeModel from "../model/like.js";
+import postModel from "../model/post.js";
 import userModel from "../model/user.js";
 
-const userLikes = (req, res) => {};
+const userLikes = async (req, res) => {
+ 
+};
 
 const likepost = async (req, res) => {
   const { id } = req.user;
@@ -22,14 +25,16 @@ const likepost = async (req, res) => {
 
     const newLike = new likeModel({ user: id, post: postId });
     const liked = await newLike.save();
-    const Updated = await userModel.findByIdAndUpdate(
-      id,
-      { $push: { likes: liked._id } },
-      { new: true }
-    );
-    console.log(Updated);
 
-    res.send("Post Liked")
+    const userInfo = await userModel.findById(id);
+    userInfo.likes.push(liked._id);
+    await userInfo.save();
+
+    // const postInfo = await postModel.findById(postId);
+    // postInfo.likes.push(liked._id);
+    // await postInfo.save();
+
+    res.send("Post Liked");
   } catch (error) {
     res.json(error.message);
   }
