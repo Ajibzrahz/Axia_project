@@ -166,6 +166,23 @@ const getAllUser = async (req, res) => {
   }
 };
 
+const test = async (req, res, next) => {
+  console.log(req.file);
+  console.log(req.body);
+  res.send(req.file);
+};
+
+const testArray = async (req, res) => {
+  console.log(req.files[1].originalname);
+  console.log(req.body);
+  res.send(req.files);
+};
+
+const testMultiple = async (req, res) => {
+  console.log(req.files)
+  res.send(req.files)
+};
+
 export {
   createUser,
   updateUser,
@@ -173,4 +190,7 @@ export {
   loginUser,
   singleUser,
   getAllUser,
+  test,
+  testArray,
+  testMultiple,
 };

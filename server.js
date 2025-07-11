@@ -23,8 +23,20 @@ mongoose
     console.log("Error connecting to MongoDB", err);
   });
 
-//middlewares
+//content-types middlewares
 app.use(express.json());
+app.use(
+  express.text({
+    type: [
+      "text/plain",
+      "application/javascript",
+      "text/html",
+      "application/xml",
+    ],
+  })
+);
+app.use(express.urlencoded())
+
 app.use(cookieParser());
 //running the routes
 app.use(router);
