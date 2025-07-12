@@ -1,6 +1,14 @@
 import userModel from "../model/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs/promises";
+
+cloudinary.config({
+  cloud_name: "dp1avqeux",
+  api_key: 656372865339717,
+  api_secret: "fi7tG4x_cJo_leWvm4Ye2nROX_U",
+});
 
 const createUser = async (req, res) => {
   const payload = req.body;
@@ -167,7 +175,12 @@ const getAllUser = async (req, res) => {
 };
 
 const test = async (req, res, next) => {
-  console.log(req.file);
+  const file = req.file.path;
+  const images = await cloudinary.uploader.upload(file, {
+    resource_type: "video",
+  });
+  await fs.unlink(file);
+  console.log(images);
   console.log(req.body);
   res.send(req.file);
 };
@@ -179,8 +192,10 @@ const testArray = async (req, res) => {
 };
 
 const testMultiple = async (req, res) => {
-  console.log(req.files)
-  res.send(req.files)
+  const file = req.files.path;
+  const images = await cloudinary.uploader.upload(req.files.path);
+  console.log(images);
+  res.send(req.files);
 };
 
 export {

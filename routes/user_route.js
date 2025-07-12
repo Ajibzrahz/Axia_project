@@ -14,7 +14,7 @@ import {
 import authenticateUser from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
-const upload = multer();
+const upload = multer({dest: 'uploads/'});
 
 const allFields = [
   { name: "dp", maxCount: 2 },

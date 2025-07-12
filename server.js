@@ -1,10 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import mongoose from "mongoose";
 import router from "./routes/user_route.js";
 import postRouter from "./routes/post_route.js";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-dotenv.config();
 import kycrouter from "./routes/kyc_routes.js";
 import likesRouter from "./routes/like_routes.js";
 
